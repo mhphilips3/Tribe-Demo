@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <assignments>
+        <description>Adds Built Opportunity, var_opportunityRecord, to the collection, col_OppCollection</description>
+        <name>Add_Opp_to_Collection</name>
+        <label>Add Opp to Collection</label>
+        <locationX>490</locationX>
+        <locationY>998</locationY>
+        <assignmentItems>
+            <assignToReference>col_OppCollection</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>var_opportunityRecord</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Iterate_through_Opp_Names</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <description>Constructs an Opportunity record for the current Opp Name iterating through the loop.</description>
+        <name>Build_Opportunity</name>
+        <label>Build Opportunity</label>
+        <locationX>490</locationX>
+        <locationY>890</locationY>
+        <assignmentItems>
+            <assignToReference>var_opportunityRecord.Project__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>var_projectRecord.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>var_opportunityRecord.Name</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Iterate_through_Opp_Names</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>var_opportunityRecord.StageName</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Needs Analysis</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>var_opportunityRecord.CloseDate</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>for_oppCloseDate</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Add_Opp_to_Collection</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <description>Prepares loop variable for processing selected trades.</description>
+        <name>Initialize_Selected_Trade_Names</name>
+        <label>Initialize Selected Trade Names</label>
+        <locationX>292</locationX>
+        <locationY>242</locationY>
+        <assignmentItems>
+            <assignToReference>var_SelectedTrades</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Trades</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Check_Remaining_Trades</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <description>Utilizes the first trade name in the var_SelectedTrades to create the desired related  Opportunity name.
+Adds Opportunity name to a text variable collection ().
+Pulls name off of var_SelectedTrades to set this variable up to process the next trade name in the next iteration of the loop.</description>
+        <name>Process_Current_Trade_Name</name>
+        <label>Process Current Trade Name</label>
+        <locationX>50</locationX>
+        <locationY>458</locationY>
+        <assignmentItems>
+            <assignToReference>col_oppNameCollection</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>for_createOppName</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>var_SelectedTrades</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>for_removeCurrentTradeName</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <isGoTo>true</isGoTo>
+            <targetReference>Check_Remaining_Trades</targetReference>
+        </connector>
+    </assignments>
+    <choices>
+        <description>Choice representing a Curtain Wall opportunity.</description>
+        <name>Curtain_Wall</name>
+        <choiceText>Curtain Wall</choiceText>
+        <dataType>String</dataType>
+        <value>
+            <stringValue>Curtain Wall</stringValue>
+        </value>
+    </choices>
+    <choices>
+        <description>Choice representing a Data Communications opportunity.</description>
+        <name>Data_Communications</name>
+        <choiceText>Data Communications</choiceText>
+        <dataType>String</dataType>
+        <value>
+            <stringValue>Data Communications</stringValue>
+        </value>
+    </choices>
+    <choices>
+        <description>Choice representing an Electrical opportunity.</description>
+        <name>Electrical</name>
+        <choiceText>Electrical</choiceText>
+        <dataType>String</dataType>
+        <value>
+            <stringValue>Electrical</stringValue>
+        </value>
+    </choices>
+    <choices>
+        <description>Choice representing a Firestop Contractor opportunity.</description>
+        <name>Firestop_Contractor</name>
+        <choiceText>Firestop Contractor</choiceText>
+        <dataType>String</dataType>
+        <value>
+            <stringValue>Firestop Contractor</stringValue>
+        </value>
+    </choices>
+    <choices>
+        <description>Choice representing an Interior Finish opportunity.</description>
+        <name>Interior_Finish</name>
+        <choiceText>Interior Finish</choiceText>
+        <dataType>String</dataType>
+        <value>
+            <stringValue>Interior Finish</stringValue>
+        </value>
+    </choices>
+    <decisions>
+        <description>If collection variable is empty, end flow, else, create Opportunities</description>
+        <name>Check_for_Opps</name>
+        <label>Check for Opps</label>
+        <locationX>534</locationX>
+        <locationY>674</locationY>
+        <defaultConnectorLabel>No Opps</defaultConnectorLabel>
+        <rules>
+            <name>Opps_to_Create</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>col_oppNameCollection</leftValueReference>
+                <operator>IsEmpty</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Iterate_through_Opp_Names</targetReference>
+            </connector>
+            <label>Opps to Create</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <description>Determines if there are any remaining trades to process.
+This Decision Element acts like the conditioning element in a While Loop for the Trade Names Not Fully Processed path.  This &quot;manufactured loop&quot; converts the semi-colon separated string into a collection of text variables (col_oppNameCollection).</description>
+        <name>Check_Remaining_Trades</name>
+        <label>Check Remaining Trades</label>
+        <locationX>292</locationX>
+        <locationY>350</locationY>
+        <defaultConnector>
+            <targetReference>Confirm_Record_Creation</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Trade Names Fully Processed</defaultConnectorLabel>
+        <rules>
+            <name>String_Not_Empty</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>var_SelectedTrades</leftValueReference>
+                <operator>IsBlank</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Process_Current_Trade_Name</targetReference>
+            </connector>
+            <label>Trade Names not Fully Processed</label>
+        </rules>
+    </decisions>
+    <description>This flow allows users to create a Project record and automatically generate related Opportunities for selected trades. Users can input the Project information, select trades, review a summary of the proposed actions, and confirm before records are created. The flow also provides a final summary of the created records with a direct link to the Project for easy navigation.</description>
+    <environments>Default</environments>
+    <formulas>
+        <description>BaseURL for created project</description>
+        <name>for_BaseURL</name>
+        <dataType>String</dataType>
+        <expression>LEFT({!$Api.Partner_Server_URL_260}, FIND(&apos;/services&apos;, {!$Api.Partner_Server_URL_260}))</expression>
+    </formulas>
+    <formulas>
+        <description>Creates an opp name (to add to the var_oppNameCollection) by grabbing the first Trade Name present in the var_SelectedTrades variable and combining that with the user inputted Project Name in the following format:
+&apos;tradeName - projectName&apos;</description>
+        <name>for_createOppName</name>
+        <dataType>String</dataType>
+        <expression>IF(CONTAINS({!var_SelectedTrades}, &quot;;&quot;),
+        LEFT({!var_SelectedTrades}, FIND(&quot;;&quot;, {!var_SelectedTrades}) - 1),
+        {!var_SelectedTrades}) +
+&quot; - &quot; +
+{!var_projectRecord.Name}</expression>
+    </formulas>
+    <formulas>
+        <description>creates close date for opportunity</description>
+        <name>for_oppCloseDate</name>
+        <dataType>Date</dataType>
+        <expression>TODAY() + 14</expression>
+    </formulas>
+    <formulas>
+        <description>Removes the current trade (plus separator &quot;;&quot;) from the unparsed string of remaining trade names(var_SelectedTrades), then overwrites var_SelectedTrades with the new, shortened string.
+If this was the last Trade Name, this will return a blank string, which will cue the Decision Element to end this &quot;While Loop&quot;</description>
+        <name>for_removeCurrentTradeName</name>
+        <dataType>String</dataType>
+        <expression>IF(CONTAINS({!var_SelectedTrades}, &quot;;&quot;),
+        RIGHT({!var_SelectedTrades}, LEN({!var_SelectedTrades})-FIND(&quot;;&quot;, {!var_SelectedTrades})),
+        &quot;&quot;)</expression>
+    </formulas>
+    <interviewLabel>SCRN Create Project and Opportunities {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>SCRN Create Project and Opportunities</label>
+    <loops>
+        <description>Loops through the collection col_oppNameCollection, building an Opportunity for each name.</description>
+        <name>Iterate_through_Opp_Names</name>
+        <label>Iterate through Opp Names</label>
+        <locationX>402</locationX>
+        <locationY>782</locationY>
+        <collectionReference>col_oppNameCollection</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Build_Opportunity</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Create_Opportunities</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <recordCreates>
+        <description>Creates Opportunity records related to the previously created Project record from the record collection variable col_OppCollection.</description>
+        <name>Create_Opportunities</name>
+        <label>Create Opportunities</label>
+        <locationX>402</locationX>
+        <locationY>1190</locationY>
+        <connector>
+            <targetReference>Finish_Screen</targetReference>
+        </connector>
+        <inputReference>col_OppCollection</inputReference>
+    </recordCreates>
+    <recordCreates>
+        <description>Creates a Project record using the user-provided information.  Stores the recordId in the variable var_ProjectId.</description>
+        <name>Create_Project</name>
+        <label>Create Project</label>
+        <locationX>534</locationX>
+        <locationY>566</locationY>
+        <connector>
+            <targetReference>Check_for_Opps</targetReference>
+        </connector>
+        <inputReference>var_projectRecord</inputReference>
+    </recordCreates>
+    <screens>
+        <description>Displays a summary of the actions to be performed and confirms user intent</description>
+        <name>Confirm_Record_Creation</name>
+        <label>Confirm Record Creation</label>
+        <locationX>534</locationX>
+        <locationY>458</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <backButtonLabel>Change Input</backButtonLabel>
+        <connector>
+            <targetReference>Create_Project</targetReference>
+        </connector>
+        <fields>
+            <name>Confirmation_Instructions</name>
+            <fieldText>&lt;p&gt;Please confirm your intent to create the displayed records.  Select &quot;Change Input&quot; to make alterations:&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Project:&lt;/span&gt;&lt;span style=&quot;color: rgb(19, 104, 225);&quot;&gt; {!var_projectRecord.Name}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Related Opportunities:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;color: rgb(19, 104, 225);&quot;&gt;{!col_oppNameCollection}&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <nextOrFinishButtonLabel>Create Records</nextOrFinishButtonLabel>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <description>End Message for user</description>
+        <name>Finish_Screen</name>
+        <label>Finish Screen</label>
+        <locationX>402</locationX>
+        <locationY>1298</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <fields>
+            <name>End_Display</name>
+            <fieldText>&lt;p&gt;You have successfully created your project and related opportunities.  Access the project&apos;s record here: &lt;a href=&quot;{!for_BaseURL}{!var_projectRecord.Id}&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;{!var_projectRecord.Name}&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <description>Collects the Project information and the selected trades from the user.</description>
+        <name>Screen_ProjectAndTrades</name>
+        <label>Project and Trade Input</label>
+        <locationX>292</locationX>
+        <locationY>134</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <connector>
+            <targetReference>Initialize_Selected_Trade_Names</targetReference>
+        </connector>
+        <fields>
+            <name>Instructions_projSpecsScreen</name>
+            <fieldText>&lt;p&gt;&lt;span style=&quot;font-size: 16px; color: rgb(8, 118, 244);&quot;&gt;Please configure your Project and related Opportunities below.&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <fields>
+            <name>Project_Information</name>
+            <fieldText>Project Information</fieldText>
+            <fieldType>RegionContainer</fieldType>
+            <fields>
+                <name>Project_Information_Column1</name>
+                <fieldType>Region</fieldType>
+                <fields>
+                    <fieldType>ObjectProvided</fieldType>
+                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <isRequired>false</isRequired>
+                    <objectFieldReference>var_projectRecord.Name</objectFieldReference>
+                </fields>
+                <inputParameters>
+                    <name>width</name>
+                    <value>
+                        <stringValue>12</stringValue>
+                    </value>
+                </inputParameters>
+                <isRequired>false</isRequired>
+            </fields>
+            <isRequired>false</isRequired>
+            <regionContainerType>SectionWithHeader</regionContainerType>
+        </fields>
+        <fields>
+            <name>Related_Opportunities</name>
+            <fieldText>Related Opportunities</fieldText>
+            <fieldType>RegionContainer</fieldType>
+            <fields>
+                <name>Related_Opportunities_Column1</name>
+                <fieldType>Region</fieldType>
+                <fields>
+                    <name>Trades</name>
+                    <choiceReferences>Firestop_Contractor</choiceReferences>
+                    <choiceReferences>Data_Communications</choiceReferences>
+                    <choiceReferences>Electrical</choiceReferences>
+                    <choiceReferences>Curtain_Wall</choiceReferences>
+                    <choiceReferences>Interior_Finish</choiceReferences>
+                    <dataType>String</dataType>
+                    <fieldText>Trades</fieldText>
+                    <fieldType>MultiSelectCheckboxes</fieldType>
+                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <isRequired>false</isRequired>
+                </fields>
+                <inputParameters>
+                    <name>width</name>
+                    <value>
+                        <stringValue>12</stringValue>
+                    </value>
+                </inputParameters>
+                <isRequired>false</isRequired>
+            </fields>
+            <isRequired>false</isRequired>
+            <regionContainerType>SectionWithHeader</regionContainerType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <start>
+        <locationX>166</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Screen_ProjectAndTrades</targetReference>
+        </connector>
+    </start>
+    <status>Draft</status>
+    <variables>
+        <description>Record Collection Variable to hold built Opportunities.</description>
+        <name>col_OppCollection</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Opportunity</objectType>
+    </variables>
+    <variables>
+        <description>Text Collection Variable that holds the Opportunity Names for the related Opportunities that will be created.  This is generated by parsing the string created in the var_Trade_Name text variable.</description>
+        <name>col_oppNameCollection</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>variable to hold built out Opportunity Record in the loop</description>
+        <name>var_opportunityRecord</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Opportunity</objectType>
+    </variables>
+    <variables>
+        <description>variable to hold the new Project__c built by user input and created with the Create Project element.</description>
+        <name>var_projectRecord</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Project__c</objectType>
+    </variables>
+    <variables>
+        <description>Stores the trades selected by the user from the multi-select checkbox.</description>
+        <name>var_SelectedTrades</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>
